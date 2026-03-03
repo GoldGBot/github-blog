@@ -62,28 +62,15 @@
     <main class="container">
         <section class="posts-section">
             <h2 class="section-title">最新文章</h2>
-            
-            <div class="posts-grid">
-                <article class="post-card">
-                    <div class="post-meta">
-                        <span class="post-tag">推荐算法</span>
-                        <span class="post-date">2025</span>
-                    </div>
-                    <h3 class="post-title">
-                        <a href="posts/ml-platform.html">大厂推荐系统实践</a>
-                    </h3>
-                    <p class="post-excerpt">
-                        从 NYC Marketing 到互联网大厂推荐算法工程师的转型之路。分享推荐系统设计、特征工程、模型迭代与 AB Test 实战经验。
-                    </p>
-                    <a href="posts/ml-platform.html" class="read-more">
-                        阅读全文
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </a>
-                </article>
 
-                <article class="post-card">
+            <div class="category-tabs">
+                <button class="category-tab active" data-category="all">全部</button>
+                <button class="category-tab" data-category="推荐算法">推荐算法</button>
+                <button class="category-tab" data-category="OpenClaw">OpenClaw</button>
+            </div>
+
+            <div class="posts-grid">
+                <article class="post-card" data-category="OpenClaw" data-date="2026-01-01">
                     <div class="post-meta">
                         <span class="post-tag">OpenClaw</span>
                         <span class="post-date">2026</span>
@@ -94,12 +81,51 @@
                     <p class="post-excerpt">
                         从 SPA 数据提取专家 skill 的开发过程中总结的实战经验，包括技能设计原则、浏览器自动化技巧与错误处理策略。
                     </p>
-                    <a href="posts/skill-writing.html" class="read-more">
-                        阅读全文
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </a>
+                    <div class="post-card-actions">
+                        <a href="posts/skill-writing.html" class="read-more">
+                            阅读全文
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                        <button
+                            class="share-btn"
+                            type="button"
+                            data-url="posts/skill-writing.html"
+                            data-title="OpenClaw Skill 开发指南"
+                        >
+                            一键分享
+                        </button>
+                    </div>
+                </article>
+
+                <article class="post-card" data-category="推荐算法" data-date="2025-01-01">
+                    <div class="post-meta">
+                        <span class="post-tag">推荐算法</span>
+                        <span class="post-date">2025</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="posts/ml-platform.html">大厂推荐系统实践</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        从 NYC Marketing 到互联网大厂推荐算法工程师的转型之路。分享推荐系统设计、特征工程、模型迭代与 AB Test 实战经验。
+                    </p>
+                    <div class="post-card-actions">
+                        <a href="posts/ml-platform.html" class="read-more">
+                            阅读全文
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                        <button
+                            class="share-btn"
+                            type="button"
+                            data-url="posts/ml-platform.html"
+                            data-title="大厂推荐系统实践"
+                        >
+                            一键分享
+                        </button>
+                    </div>
                 </article>
             </div>
         </section>

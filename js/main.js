@@ -1,13 +1,10 @@
-// Theme Toggle
 document.addEventListener('DOMContentLoaded', function() {
     const themeToggle = document.querySelector('.theme-toggle');
     const html = document.documentElement;
     
-    // Check for saved theme preference
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    // Set initial theme
     if (savedTheme) {
         html.setAttribute('data-theme', savedTheme);
     } else if (prefersDark) {
@@ -16,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
         html.setAttribute('data-theme', 'light');
     }
     
-    // Toggle theme
     themeToggle.addEventListener('click', function() {
         const currentTheme = html.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -25,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('theme', newTheme);
     });
     
-    // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             e.preventDefault();
@@ -39,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add animation on scroll
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -54,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, observerOptions);
     
-    // Observe cards for animation
     document.querySelectorAll('.post-card, .topic-card').forEach(card => {
         card.style.opacity = '0';
         card.style.transform = 'translateY(20px)';
@@ -62,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(card);
     });
     
-    // Navbar scroll effect
     let lastScroll = 0;
     const navbar = document.querySelector('.navbar');
     
@@ -78,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
         lastScroll = currentScroll;
     });
     
-    // Code block copy functionality
     document.querySelectorAll('.code-block').forEach(block => {
         // Only add copy button if there's no heading (to avoid conflicts)
         const parent = block.parentElement;
@@ -127,5 +118,76 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    });
+    // Homepage category filter & date sort
+    const postsGrid = document.querySelector('.posts-grid');
+    const categoryTabs = document.querySelectorAll('.category-tab');
+
+    if (postsGrid) {
+        const cards = Array.from(postsGrid.querySelectorAll('.post-card'));
+
+        // Sort by data-date (newest first)
+        cards
+            .sort((a, b) => {
+                const da = a.dataset.date || '';
+                const db = b.dataset.date || '';
+                return db.localeCompare(da);
+            })
+            .forEach(card => postsGrid.appendChild(card));
+
+        // Category filter
+        if (categoryTabs.length) {
+            categoryTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const current = tab.dataset.category;
+                    categoryTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    cards.forEach(card => {
+                        const cat = card.dataset.category || 'all';
+                        card.style.display =
+                            current === 'all' || current === cat ? '' : 'none';
+                    });
+                });
+            });
+        }
+    }
+
+    // One-click share (homepage cards + post pages)
+    function buildAbsoluteUrl(relativePath) {
+        try {
+            return new URL(relativePath, window.location.href).href;
+        } catch {
+            return window.location.href;
+        }
+    }
+
+    async function handleShareClick(btn) {
+        const explicitUrl = btn.getAttribute('data-url');
+        const explicitTitle = btn.getAttribute('data-title');
+
+        const url = explicitUrl ? buildAbsoluteUrl(explicitUrl) : window.location.href;
+        const title = explicitTitle || document.title;
+
+        try {
+            if (navigator.share) {
+                await navigator.share({ title, url });
+            } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(url);
+                const original = btn.textContent;
+                btn.textContent = '链接已复制';
+                btn.style.color = 'var(--accent-primary)';
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.style.color = '';
+                }, 2000);
+            }
+        } catch (e) {
+            console.error('Share failed', e);
+        }
+    }
+
+    document.querySelectorAll('.share-btn').forEach(btn => {
+        btn.addEventListener('click', () => handleShareClick(btn));
     });
 });
