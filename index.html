@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jin Yutong's Blog</title>
+    <meta name="description" content="ML Platform & OpenClaw Skill Development">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">首页</a></li>
+                <li><a href="posts/ml-platform.html">推荐算法</a></li>
+                <li><a href="posts/skill-writing.html">Skill 写作</a></li>
+                <li><a href="about.html">关于</a></li>
+            </ul>
+            <button class="theme-toggle" aria-label="切换主题">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">从营销</span>到算法
+                    <br>记录<span class="gradient-text">技术转型</span>之路
+                </h1>
+                <p class="hero-subtitle">
+                    Ex NYC Marketer | 大厂推荐算法 | 电信算法工程师 | OpenClaw Skill 开发者
+                </p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">2+</span>
+                        <span class="stat-label">核心项目</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">∞</span>
+                        <span class="stat-label">学习热情</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-bg"></div>
+    </header>
+
+    <main class="container">
+        <section class="posts-section">
+            <h2 class="section-title">最新文章</h2>
+            
+            <div class="posts-grid">
+                <article class="post-card">
+                    <div class="post-meta">
+                        <span class="post-tag">推荐算法</span>
+                        <span class="post-date">2025</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="posts/ml-platform.html">大厂推荐系统实践</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        从 NYC Marketing 到互联网大厂推荐算法工程师的转型之路。分享推荐系统设计、特征工程、模型迭代与 AB Test 实战经验。
+                    </p>
+                    <a href="posts/ml-platform.html" class="read-more">
+                        阅读全文
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </article>
+
+                <article class="post-card">
+                    <div class="post-meta">
+                        <span class="post-tag">OpenClaw</span>
+                        <span class="post-date">2026</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="posts/skill-writing.html">OpenClaw Skill 开发指南</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        从 SPA 数据提取专家 skill 的开发过程中总结的实战经验，包括技能设计原则、浏览器自动化技巧与错误处理策略。
+                    </p>
+                    <a href="posts/skill-writing.html" class="read-more">
+                        阅读全文
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <section class="topics-section">
+            <h2 class="section-title">关注领域</h2>
+            <div class="topics-grid">
+                <div class="topic-card">
+                    <div class="topic-icon">🤖</div>
+                    <h4>MLOps</h4>
+                    <p>模型生命周期管理与自动化部署</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">📊</div>
+                    <h4>Feature Store</h4>
+                    <p>特征工程与实时特征服务</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">🧩</div>
+                    <h4>Agent Skills</h4>
+                    <p>OpenClaw 技能开发与自动化</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">🌐</div>
+                    <h4>Browser Automation</h4>
+                    <p>SPA 数据提取与网页自动化</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo">
+                        <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+                    </span>
+                    <p>记录技术成长，分享实践经验</p>
+                </div>
+                <div class="footer-links">
+                    <a href="mailto:jinxiaohou@outlook.com">联系</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Jin Yutong. Built with passion.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

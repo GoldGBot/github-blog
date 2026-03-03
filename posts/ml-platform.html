@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大厂推荐系统实践 - Jin Yutong's Blog</title>
+    <meta name="description" content="大厂推荐系统的实战经验，从 NYC Marketing 到推荐算法工程师的转型之路">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">
+                <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="ml-platform.html" class="active">推荐算法</a></li>
+                <li><a href="skill-writing.html">Skill 写作</a></li>
+                <li><a href="../about.html">关于</a></li>
+            </ul>
+            <button class="theme-toggle" aria-label="切换主题">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <article class="blog-post">
+            <header class="post-header">
+                <div class="post-meta">
+                    <span class="post-tag">推荐系统</span>
+                    <span class="post-tag">算法工程</span>
+                    <span class="post-date">2025</span>
+                </div>
+                <h1 class="post-title-large">大厂推荐系统实践</h1>
+                <p class="post-subtitle">
+                    从 NYC Marketing 到推荐算法工程师的转型之路
+                </p>
+            </header>
+
+            <div class="post-content">
+                <h2>引言</h2>
+                <p>
+                    从纽约的市场营销工作转行到国内互联网大厂的推荐算法工程师，这段经历让我对技术和业务有了更全面的理解。
+                    营销背景让我更关注用户体验和商业价值，而算法工程能力让我能够将这些洞察落地为实际的产品改进。
+                </p>
+                <p>
+                    本文将分享我在大厂推荐系统工作中积累的实战经验，
+                    包括召回、排序、特征工程、模型迭代以及 AB Test 等核心环节的实践心得。
+                </p>
+
+                <h2>推荐系统架构概览</h2>
+                <p>
+                    一个典型的大厂推荐系统通常采用多阶段漏斗架构，从海量候选中逐步筛选出最终推荐结果：
+                </p>
+
+                <div class="architecture-diagram">
+                    <pre class="code-block"><code>┌─────────────────────────────────────────────────────────┐
+│                     用户请求层 (Request)                    │
+│                    用户ID + 上下文信息                       │
+├─────────────────────────────────────────────────────────┤
+│                     召回层 (Recall)                        │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │
+│  │ 协同过滤  │ │ 向量检索  │ │ 图模型   │ │ 规则策略  │   │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘   │
+│                   ↓ 千级候选集                              │
+├─────────────────────────────────────────────────────────┤
+│                     粗排层 (Coarse Ranking)                │
+│              轻量级模型快速打分筛选                          │
+│                   ↓ 百级候选集                              │
+├─────────────────────────────────────────────────────────┤
+│                     精排层 (Fine Ranking)                  │
+│         深度模型 (DNN/Wide&Deep/DeepFM等)                  │
+│                   ↓ 十级候选集                              │
+├─────────────────────────────────────────────────────────┤
+│                     重排层 (Re-ranker)                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐                 │
+│  │ 多样性控制│ │ 新鲜度   │ │ 业务规则  │                 │
+│  └──────────┘ └──────────┘ └──────────┘                 │
+├─────────────────────────────────────────────────────────┤
+│                     展示层 (Display)                       │
+└─────────────────────────────────────────────────────────┘</code></pre>
+                </div>
+
+                <h2>核心模块详解</h2>
+
+                <h3>1. 召回层 (Recall)</h3>
+                <p>
+                    召回层的目标是从海量物料中快速筛选出千级别的候选集。我们采用了多路召回策略：
+                </p>
+                <ul>
+                    <li><strong>i2i (Item-to-Item)</strong>：基于物品的协同过滤，计算物品相似度</li>
+                    <li><strong>u2i (User-to-Item)</strong>：基于用户的协同过滤，找到相似用户喜欢的物品</li>
+                    <li><strong>向量召回</strong>：使用双塔模型将用户和物品编码为向量，通过 ANN 快速检索</li>
+                    <li><strong>图模型</strong>：利用 Graph Embedding 捕捉高阶连接关系</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <strong>实践经验：</strong>召回的覆盖率比准确率更重要。宁可错召，不可漏召。
+                    精排层有足够的能力将不相关的物品过滤掉。
+                </div>
+
+                <h3>2. 特征工程</h3>
+                <p>
+                    特征工程是推荐系统的核心竞争力。我们将特征分为几个维度：
+                </p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>特征类别</th>
+                            <th>示例</th>
+                            <th>处理方式</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>用户画像</td>
+                            <td>年龄、性别、地域、兴趣标签</td>
+                            <td>One-hot / Embedding</td>
+                        </tr>
+                        <tr>
+                            <td>物品特征</td>
+                            <td>类别、标签、创作者、发布时间</td>
+                            <td>Embedding / 统计特征</td>
+                        </tr>
+                        <tr>
+                            <td>上下文</td>
+                            <td>时间、设备、位置、网络</td>
+                            <td>离散化 / 交叉特征</td>
+                        </tr>
+                        <tr>
+                            <td>行为序列</td>
+                            <td>点击、收藏、分享历史</td>
+                            <td>Sequence Modeling</td>
+                        </tr>
+                        <tr>
+                            <td>交叉特征</td>
+                            <td>用户-物品匹配度</td>
+                            <td>FM / DeepFM</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>实时特征 vs 离线特征</h4>
+                <p>
+                    特征的新鲜度直接影响推荐效果。我们采用 Lambda 架构处理特征：
+                </p>
+                <ul>
+                    <li><strong>离线特征</strong>：T+1 更新，用于用户画像、物品统计等变化较慢的特征</li>
+                    <li><strong>实时特征</strong>：秒级延迟，用于用户最近行为、当前会话上下文等</li>
+                </ul>
+
+                <h3>3. 模型迭代</h3>
+                <p>
+                    从传统的 LR 到深度模型，推荐系统的模型经历了多代演进：
+                </p>
+
+                <div class="code-example">
+                    <h4>模型演进路径</h4>
+                    <pre class="code-block"><code>LR (2015) 
+  ↓
+FM / FFM (2016) - 自动二阶交叉
+  ↓
+Wide & Deep (2017) - 记忆 + 泛化
+  ↓
+DeepFM (2018) - 端到端学习交叉
+  ↓
+DIN (2019) - 注意力机制建模用户兴趣
+  ↓
+DIEN (2020) - 序列建模 + 兴趣演化
+  ↓
+MMoE / PLE (2021+) - 多任务学习</code></pre>
+                </div>
+
+                <h3>4. AB Test 实践</h3>
+                <p>
+                    AB Test 是推荐系统迭代的核心驱动力。我们的 AB Test 体系包括：
+                </p>
+
+                <ul>
+                    <li><strong>分流</strong>：基于用户 ID 哈希，确保用户每次进入同一实验组</li>
+                    <li><strong>互斥域</strong>：不同层级的实验相互独立，避免相互干扰</li>
+                    <li><strong>指标</strong>：
+                        <ul>
+                            <li>北极星指标：人均使用时长、DAU 等</li>
+                            <li>过程指标：点击率、完播率、收藏率等</li>
+                            <li>健康指标：多样性、新鲜度等</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <div class="highlight-box warning">
+                    <strong>常见坑点：</strong>实验组和对照组的样本量要足够大，运行时间要足够长（至少一周覆盖完整用户周期）。
+                    小流量实验可能会因为样本偏差得出错误结论。
+                </div>
+
+                <h2>从营销到算法的跨界思考</h2>
+
+                <h3>1. 用户视角</h3>
+                <p>
+                    Marketing 背景让我在做推荐算法时始终关注<strong>用户真实需求</strong>，
+                    而不是单纯追求技术指标。一个 CTR 很高的推荐，如果让用户感到厌烦或疲劳，
+                    长期来看是损害用户体验的。
+                </p>
+
+                <h3>2. 数据驱动</h3>
+                <p>
+                    Marketing 教会我如何设计实验、解读数据。这种思维方式在 AB Test 和模型评估中非常有价值。
+                    不只是看指标涨跌，更要理解<strong>为什么</strong>会涨跌，背后的用户行为逻辑是什么。
+                </p>
+
+                <h3>3. 业务理解</h3>
+                <p>
+                    推荐系统不只是技术问题，更是业务问题。理解商业目标、用户生命周期价值、
+                    内容生态健康度等，才能做出真正有价值的推荐策略。
+                </p>
+
+                <h2>总结</h2>
+                <p>
+                    推荐系统是一个复杂的工程问题，需要在技术深度和业务理解之间找到平衡。
+                    从营销转型的经历让我更能理解"为什么做"，而不仅仅是"怎么做"。
+                </p>
+                <p>
+                    未来，随着大模型和 Agent 技术的发展，推荐系统可能会有新的范式。
+                    但核心始终不变：<strong>理解用户，创造价值</strong>。
+                </p>
+            </div>
+
+            <footer class="post-footer">
+                <div class="post-nav">
+                    <a href="../index.html" class="post-nav-link prev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        返回首页
+                    </a>
+                    <a href="skill-writing.html" class="post-nav-link next">
+                        下一篇：Skill 开发指南
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </footer>
+        </article>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo">
+                        <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+                    </span>
+                    <p>记录技术成长，分享实践经验</p>
+                </div>
+                <div class="footer-links">
+                    <a href="mailto:jinxiaohou@outlook.com">联系</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Jin Yutong. Built with passion.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+</body>
+</html>

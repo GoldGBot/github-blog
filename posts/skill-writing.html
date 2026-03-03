@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw Skill 开发指南 - Jin Ruicheng's Blog</title>
+    <meta name="description" content="从 SPA 数据提取专家 skill 的开发过程中总结的实战经验">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">
+                <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="ml-platform.html">推荐算法</a></li>
+                <li><a href="skill-writing.html" class="active">Skill 写作</a></li>
+                <li><a href="../about.html">关于</a></li>
+            </ul>
+            <button class="theme-toggle" aria-label="切换主题">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <article class="blog-post">
+            <header class="post-header">
+                <div class="post-meta">
+                    <span class="post-tag">OpenClaw</span>
+                    <span class="post-tag">Agent</span>
+                    <span class="post-tag">Automation</span>
+                    <span class="post-date">2026</span>
+                </div>
+                <h1 class="post-title-large">OpenClaw Skill 开发指南</h1>
+                <p class="post-subtitle">
+                    从 SPA 数据提取专家 skill 的开发过程中总结的实战经验
+                </p>
+            </header>
+
+            <div class="post-content">
+                <h2>引言</h2>
+                <p>
+                    OpenClaw 是一个强大的 AI Agent 平台，通过 Skills 机制可以扩展其能力边界。
+                    最近我开发了一个 <code>spa-extractor</code> skill，专门用于从 JavaScript 动态渲染的单页面应用中提取数据。
+                    这篇文章将分享开发过程中的核心经验和"死磕"技巧。
+                </p>
+
+                <h2>什么是 OpenClaw Skill？</h2>
+                <p>
+                    Skill 是 OpenClaw 的模块化扩展单元，本质上是一个包含以下内容的文件夹：
+                </p>
+                <ul>
+                    <li><code>SKILL.md</code> - 技能的核心文档，包含使用说明和最佳实践</li>
+                    <li><code>scripts/</code> - 可执行脚本（Python、Bash 等）</li>
+                    <li><code>references/</code> - 参考资料和文档</li>
+                    <li><code>assets/</code> - 模板、图片等资源文件</li>
+                </ul>
+
+                <p>
+                    当用户提出与 skill 描述匹配的需求时，OpenClaw 会自动加载该 skill，
+                    按照 SKILL.md 中的指导执行任务。
+                </p>
+
+                <h2>核心设计原则</h2>
+
+                <h3>1. 渐进式披露 (Progressive Disclosure)</h3>
+                <p>
+                    Skill 采用三级加载系统来管理上下文：
+                </p>
+                <ol>
+                    <li><strong>元数据</strong>（始终加载）- name + description，约 100 词</li>
+                    <li><strong>SKILL.md 正文</strong>（触发后加载）- 详细说明，&lt;5000 词</li>
+                    <li><strong>资源文件</strong>（按需加载）- scripts、references 等</li>
+                </ol>
+
+                <div class="highlight-box">
+                    <strong>设计要点：</strong>description 字段是 skill 的主要触发机制，
+                    必须清晰描述技能的用途和触发条件。不要把"何时使用"放在正文里，
+                    因为正文是在触发后才加载的！
+                </div>
+
+                <h3>2. 简洁为王</h3>
+                <p>
+                    上下文窗口是公共资源。Skill 需要与系统提示、对话历史、其他 skills 共享上下文。
+                </p>
+                <ul>
+                    <li>SKILL.md 正文控制在 500 行以内</li>
+                    <li>优先使用代码示例而非冗长解释</li>
+                    <li>将详细信息移到 references/ 文件</li>
+                </ul>
+
+                <h2>实战：SPA 数据提取 Skill</h2>
+
+                <p>
+                    让我们深入分析 <code>spa-extractor</code> skill 的设计。这个 skill 解决的核心问题是：
+                    现代 SPA（Vue/React/Angular）初始 HTML 只是一个空壳，所有内容都是异步加载的。
+                </p>
+
+                <h3>核心挑战</h3>
+                <div class="code-example">
+                    <h4>典型的 SPA HTML 结构</h4>
+                    <pre class="code-block"><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;...&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- 初始只有这个空 div --&gt;
+    &lt;div id="app"&gt;&lt;/div&gt;
+    
+    &lt;script src="/app.js"&gt;&lt;/script&gt;
+    &lt;!-- JS 执行后才会渲染内容 --&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                </div>
+
+                <h3>三大死磕戒律</h3>
+
+                <h4>戒律 1：禁止秒读</h4>
+                <p>
+                    网页加载或点击"查询"后，<strong>绝对不允许</strong>立刻截取 DOM！
+                    必须等待 Vue/React 完成 DOM 重绘。
+                </p>
+
+                <div class="code-example">
+                    <h4>❌ 错误做法</h4>
+                    <pre class="code-block"><code class="language-bash">openclaw browser click "查询"
+openclaw browser snapshot  # ← 数据还没渲染！</code></pre>
+                </div>
+
+                <div class="code-example">
+                    <h4>✅ 正确做法</h4>
+                    <pre class="code-block"><code class="language-bash">openclaw browser click "查询"
+sleep 5  # 至少等待 3-5 秒
+openclaw browser snapshot  # ← 现在数据存在了</code></pre>
+                </div>
+
+                <h4>戒律 2：文本定位优于类名</h4>
+                <p>
+                    Webpack/Vite 等打包工具会混淆 CSS 类名，依赖 <code>.table-row_a1b2c</code> 这样的选择器是极其脆弱的。
+                </p>
+
+                <div class="code-example">
+                    <h4>❌ 脆弱的选择器</h4>
+                    <pre class="code-block"><code class="language-bash">openclaw browser click ".btn-primary_a3f8d"</code></pre>
+                </div>
+
+                <div class="code-example">
+                    <h4>✅ 健壮的做法</h4>
+                    <pre class="code-block"><code class="language-bash"># 使用 JavaScript 文本匹配
+openclaw browser evaluate "
+    Array.from(document.querySelectorAll('button'))
+        .find(el => el.textContent.includes('查询'))
+        .click()
+"</code></pre>
+                </div>
+
+                <h4>戒律 3：强制降级策略</h4>
+                <p>
+                    如果 <code>openclaw browser click</code> 失败两次，立即降级使用 JavaScript 执行点击。
+                </p>
+
+                <div class="code-example">
+                    <h4>降级模式</h4>
+                    <pre class="code-block"><code class="language-bash"># 尝试 1：视觉点击
+openclaw browser click "查询" || FAILED=1
+
+# 尝试 2：再次视觉点击
+openclaw browser click "查询" || FAILED=2
+
+# 尝试 3：JS 执行（降级）
+if [ $FAILED -eq 2 ]; then
+    openclaw browser evaluate "
+        Array.from(document.querySelectorAll('button'))
+            .find(el => el.textContent.includes('查询'))
+            .click()
+    "
+fi</code></pre>
+                </div>
+
+                <h2>四步提取 SOP</h2>
+
+                <h3>Step 1: Hydration & 条件穿透</h3>
+                <p>
+                    确认 <code>&lt;div id="app"&gt;</code> 已经生成子节点。如果是空的，原地休眠重试。
+                </p>
+
+                <div class="code-example">
+                    <pre class="code-block"><code class="language-bash"># 检查页面是否已渲染
+openclaw browser evaluate "
+    document.getElementById('app').children.length > 0
+"</code></pre>
+                </div>
+
+                <h3>Step 2: 查询与动态等待</h3>
+                <p>
+                    点击查询后，不要相信 Network 面板。数据可能通过 WebSocket 或复杂封装的 XHR 返回。
+                    必须盯着页面，直到 loading 状态消失。
+                </p>
+
+                <div class="code-example">
+                    <pre class="code-block"><code class="language-bash"># 循环检查 loading 状态
+for i in {1..10}; do
+    is_loaded=$(openclaw browser evaluate "
+        !document.querySelector('.el-loading-mask') && 
+        !document.querySelector('.loading') &&
+        document.querySelectorAll('table tr').length > 1
+    ")
+    if [ "$is_loaded" = "true" ]; then break; fi
+    sleep 2
+done</code></pre>
+                </div>
+
+                <h3>Step 3: 暴力扒取数据</h3>
+                <p>
+                    当 DOM 嵌套过深（几十层 div），不要手动解析。直接用 JavaScript 展平：
+                </p>
+
+                <div class="code-example">
+                    <pre class="code-block"><code class="language-bash">openclaw browser evaluate "
+    // 策略 1：表格结构
+    let rows = Array.from(document.querySelectorAll('table tr, .el-table__row'));
+    
+    // 策略 2：列表/网格结构（备选）
+    if (rows.length === 0) {
+        rows = Array.from(document.querySelectorAll('.list-item, .grid-item'));
+    }
+    
+    // 提取为二维数组
+    return rows.map(row => {
+        const cells = row.querySelectorAll('td, th, .cell');
+        return Array.from(cells).map(c => c.innerText.trim()).filter(Boolean);
+    }).filter(row => row.length > 0);
+"</code></pre>
+                </div>
+
+                <div class="highlight-box warning">
+                    <strong>数据校验：</strong>如果抓取结果是 <code>['-']</code> 或 <code>['暂无数据']</code>，
+                    说明等待时间不够，返回 Step 2 重新执行！
+                </div>
+
+                <h3>Step 4: 数据落表</h3>
+                <p>
+                    使用 Python pandas 进行最终校验和 Excel 持久化。
+                </p>
+
+                <div class="code-example">
+                    <h4>save_to_excel.py 核心逻辑</h4>
+                    <pre class="code-block"><code class="language-python">import pandas as pd
+import json
+
+# 加载提取的数据
+with open('extracted_data.json') as f:
+    data = json.load(f)
+
+# 转换为 DataFrame
+headers = data[0]
+rows = data[1:]
+df = pd.DataFrame(rows, columns=headers)
+
+# 数据质量检查
+invalid = ['-', '暂无数据', 'N/A', '', None]
+valid_cells = sum(
+    str(v).strip() not in invalid 
+    for row in df.values for v in row
+)
+
+if valid_cells == 0:
+    raise ValueError("No valid data found!")
+
+# 保存
+df.to_excel('output.xlsx', index=False)</code></pre>
+                </div>
+
+                <h2>错误处理与重试</h2>
+
+                <p>
+                    <strong>必须重试满 5 次</strong>才能报告错误。这是保证成功率的关键。
+                </p>
+
+                <div class="code-example">
+                    <pre class="code-block"><code class="language-bash">#!/bin/bash
+MAX_RETRIES=5
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    data=$(openclaw browser evaluate "/* extraction */")
+    
+    # 验证数据有效性
+    if [ -n "$data" ] && 
+       [[ "$data" != *"暂无数据"* ]] && 
+       [[ "$data" != *"['-']"* ]]; then
+        echo "✅ SUCCESS"
+        break
+    fi
+    
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    echo "Attempt $RETRY_COUNT failed, retrying..."
+    sleep 3
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "❌ FAILURE after $MAX_RETRIES attempts"
+    exit 1
+fi</code></pre>
+                </div>
+
+                <h2>Skill 打包与安装</h2>
+
+                <h3>1. 使用 skill-creator 初始化</h3>
+                <pre class="code-block"><code class="language-bash">python3 scripts/init_skill.py spa-extractor \
+    --path skills/public \
+    --resources scripts,references</code></pre>
+
+                <h3>2. 编写 SKILL.md</h3>
+                <p>
+                    关键：description 字段必须包含触发条件，因为 skill 是根据 description 来匹配用户请求的。
+                </p>
+
+                <div class="code-example">
+                    <h4>SKILL.md 头部示例</h4>
+                    <pre class="code-block"><code>---
+name: spa-extractor
+description: |
+    Extract data from JavaScript-heavy Single Page Applications (SPAs) 
+    using OpenClaw browser automation. Use when dealing with Vue/React/Angular 
+    apps that render content dynamically, require waiting for DOM hydration, 
+    involve complex table extraction, or need data exported to Excel.
+---</code></pre>
+                </div>
+
+                <h3>3. 打包与安装</h3>
+                <pre class="code-block"><code class="language-bash"># 打包
+python3 scripts/package_skill.py spa-extractor ./dist
+
+# 生成 spa-extractor.skill 文件（实际是 zip 格式）</code></pre>
+
+                <h2>总结与建议</h2>
+
+                <h3>写好 Skill 的关键</h3>
+                <ol>
+                    <li>
+                        <strong>明确的触发描述</strong> - description 要准确描述技能能力和使用场景
+                    </li>
+                    <li>
+                        <strong>具体的工作流程</strong> - 提供可执行的步骤，而不是泛泛而谈
+                    </li>
+                    <li>
+                        <strong>丰富的代码示例</strong> - 示例比解释更有效
+                    </li>
+                    <li>
+                        <strong>实用的工具脚本</strong> - 将复杂逻辑封装到 scripts/ 中
+                    </li>
+                    <li>
+                        <strong>容错与重试机制</strong> - 真实世界充满不确定性
+                    </li>
+                </ol>
+
+                <h3>常见框架模式参考</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>框架</th>
+                            <th>表格行选择器</th>
+                            <th>Loading 选择器</th>
+                            <th>下拉列表位置</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Element UI</td>
+                            <td><code>.el-table__row</code></td>
+                            <td><code>.el-loading-mask</code></td>
+                            <td>body 末尾</td>
+                        </tr>
+                        <tr>
+                            <td>Ant Design</td>
+                            <td><code>.ant-table-row</code></td>
+                            <td><code>.ant-spin</code></td>
+                            <td>相对定位</td>
+                        </tr>
+                        <tr>
+                            <td>Vuetify</td>
+                            <td><code>.v-data-table__tr</code></td>
+                            <td><code>.v-progress-linear</code></td>
+                            <td>相对定位</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    Skill 开发是一门平衡艺术：既要提供足够的指导让 AI 能够正确执行任务，
+                    又要保持简洁避免上下文膨胀。希望这篇指南能帮助你开发出强大的 OpenClaw Skills！
+                </p>
+            </div>
+
+            <footer class="post-footer">
+                <div class="post-nav">
+                    <a href="ml-platform.html" class="post-nav-link prev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        上一篇：ML Platform
+                    </a>
+                    <a href="../index.html" class="post-nav-link next">
+                        返回首页
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </footer>
+        </article>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo">
+                        <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+                    </span>
+                    <p>记录技术成长，分享实践经验</p>
+                </div>
+                <div class="footer-links">
+                    <a href="mailto:jinxiaohou@outlook.com">联系</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Jin Yutong. Built with passion.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+</body>
+</html>
