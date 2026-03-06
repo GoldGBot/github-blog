@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推荐算法 - Jin Yutong's Blog</title>
+    <meta name="description" content="推荐算法、数据挖掘、人群挖掘模型相关文章">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">
+                <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="recommendation.html" class="active">推荐算法</a></li>
+                <li><a href="../posts/skill-writing.html">Skill 写作</a></li>
+                <li><a href="../about.html">关于</a></li>
+            </ul>
+            <button class="theme-toggle" aria-label="切换主题">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="category-header">
+            <h1 class="category-title">📊 推荐算法</h1>
+            <p class="category-description">
+                分享推荐系统、数据挖掘、人群挖掘模型相关的技术文章与实战经验
+            </p>
+        </section>
+
+        <section class="posts-section">
+            <div class="posts-grid">
+                <article class="post-card" data-category="推荐算法" data-date="2026-03-01">
+                    <div class="post-meta">
+                        <span class="post-tag">数据挖掘</span>
+                        <span class="post-date">2026</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="../posts/audience-mining.html">人群挖掘模型通俗解读</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        用通俗易懂的方式解释人群挖掘模型的核心原理和评价体系。包含前言（如何向不同背景的人解释）、模型简介、评价体系、影响模型效果的因素，以及向领导汇报的框架模板。中英双语版本，附带交互式 AUC 演示。
+                    </p>
+                    <div class="post-card-actions">
+                        <a href="../posts/audience-mining.html" class="read-more">
+                            阅读全文
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                        <button
+                            class="share-btn"
+                            type="button"
+                            data-url="../posts/audience-mining.html"
+                            data-title="人群挖掘模型通俗解读"
+                        >
+                            一键分享
+                        </button>
+                    </div>
+                </article>
+
+                <article class="post-card" data-category="推荐算法" data-date="2025-01-01">
+                    <div class="post-meta">
+                        <span class="post-tag">推荐系统</span>
+                        <span class="post-date">2025</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="../posts/ml-platform.html">大厂推荐系统实践</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        从 NYC Marketing 到互联网大厂推荐算法工程师的转型之路。分享推荐系统设计、召回/排序架构、特征工程、模型迭代与 AB Test 实战经验。
+                    </p>
+                    <div class="post-card-actions">
+                        <a href="../posts/ml-platform.html" class="read-more">
+                            阅读全文
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                        <button
+                            class="share-btn"
+                            type="button"
+                            data-url="../posts/ml-platform.html"
+                            data-title="大厂推荐系统实践"
+                        >
+                            一键分享
+                        </button>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo">
+                        <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+                    </span>
+                    <p>记录技术成长，分享实践经验</p>
+                </div>
+                <div class="footer-links">
+                    <a href="mailto:jinxiaohou@outlook.com">联系</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Jin Yutong. Built with passion.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+</body>
+</html>

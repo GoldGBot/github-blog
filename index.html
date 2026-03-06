@@ -18,7 +18,7 @@
             </a>
             <ul class="nav-links">
                 <li><a href="index.html" class="active">首页</a></li>
-                <li><a href="posts/ml-platform.html">推荐算法</a></li>
+                <li><a href="categories/recommendation.html">推荐算法</a></li>
                 <li><a href="posts/skill-writing.html">Skill 写作</a></li>
                 <li><a href="about.html">关于</a></li>
             </ul>
@@ -55,11 +55,42 @@
 
             <div class="category-tabs">
                 <button class="category-tab active" data-category="all">全部</button>
-                <button class="category-tab" data-category="推荐算法">推荐算法</button>
+                <button class="category-tab" data-category="推荐算法">
+                    <a href="categories/recommendation.html">推荐算法</a>
+                </button>
                 <button class="category-tab" data-category="OpenClaw">OpenClaw</button>
             </div>
 
             <div class="posts-grid">
+                <article class="post-card" data-category="推荐算法" data-date="2026-03-01">
+                    <div class="post-meta">
+                        <span class="post-tag">推荐算法</span>
+                        <span class="post-date">2026</span>
+                    </div>
+                    <h3 class="post-title">
+                        <a href="posts/audience-mining.html">人群挖掘模型通俗解读</a>
+                    </h3>
+                    <p class="post-excerpt">
+                        用通俗易懂的方式解释人群挖掘模型的核心原理和评价体系。包含前言（如何向不同背景的人解释）、模型简介、评价体系、影响模型效果的因素，以及向领导汇报的框架模板。中英双语版本。
+                    </p>
+                    <div class="post-card-actions">
+                        <a href="posts/audience-mining.html" class="read-more">
+                            阅读全文
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                        <button
+                            class="share-btn"
+                            type="button"
+                            data-url="posts/audience-mining.html"
+                            data-title="人群挖掘模型通俗解读"
+                        >
+                            一键分享
+                        </button>
+                    </div>
+                </article>
+
                 <article class="post-card" data-category="OpenClaw" data-date="2026-01-01">
                     <div class="post-meta">
                         <span class="post-tag">OpenClaw</span>
