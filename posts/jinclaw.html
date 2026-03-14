@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一晚上打造专属本地自进化 AI 助理 Jinclaw - Jin Yutong's Blog</title>
+    <meta name="description" content="打破大厂生态壁垒，用 Python 从零手搓完全属于自己的、长期驻留在本地机器上的全天候 AI 助理 / Building a Custom Local Self-Evolving AI Assistant">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* 继承原有的所有样式 */
+        .bilingual-section { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px dashed #e9ecef; }
+        .bilingual-section:last-child { border-bottom: none; }
+        .zh-block { margin-bottom: 16px; }
+        .en-block { color: #6c757d; font-style: italic; padding-left: 16px; border-left: 3px solid #e9ecef; margin-bottom: 20px; }
+        .en-block h3, .en-block h4, .en-block h5 { color: #6c757d; font-style: italic; }
+        .lang-toggle { position: fixed; top: 80px; right: 20px; z-index: 1000; display: flex; gap: 8px; }
+        .lang-btn { padding: 8px 16px; border: 2px solid #007bff; background: white; color: #007bff; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+        .lang-btn.active { background: #007bff; color: white; }
+        .lang-btn:hover { background: #e7f3ff; }
+        .lang-btn.active:hover { background: #0056b3; }
+        .en-only { display: none; }
+        .zh-only { display: block; }
+        body.en-mode .en-only { display: block; }
+        body.en-mode .zh-only { display: none; }
+        body.en-mode .en-block { color: #212529; font-style: normal; border-left-color: #007bff; }
+        body.en-mode .en-block h3, body.en-mode .en-block h4 { color: #1a1a1a; font-style: normal; }
+        
+        /* 图片占位符自定义样式 */
+        .img-placeholder {
+            width: 100%;
+            height: 300px;
+            background-color: #f8f9fa;
+            border: 2px dashed #adb5bd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-weight: 600;
+            margin: 24px 0;
+            font-size: 16px;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="lang-toggle">
+        <button class="lang-btn active" data-lang="both">中英对照</button>
+        <button class="lang-btn" data-lang="zh">中文</button>
+        <button class="lang-btn" data-lang="en">English</button>
+    </div>
+
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">
+                <span class="logo-bracket">[</span>JY<span class="logo-bracket">]</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="ml-platform.html">推荐算法</a></li>
+                <li><a href="skill-writing.html">Skill 写作</a></li>
+                <li><a href="../about.html">关于</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <article class="blog-post">
+            <header class="post-header">
+                <div class="post-meta">
+                    <span class="post-tag">AI Agent</span>
+                    <span class="post-tag">Python</span>
+                    <span class="post-tag">极客实践</span>
+                    <span class="post-date">2026</span>
+                </div>
+                <h1 class="post-title-large">
+                    <span class="zh-only">一晚上打造专属本地自进化 AI 助理 Jinclaw</span>
+                    <span class="en-only">Building Jinclaw: A Custom Local Self-Evolving AI Assistant in One Night</span>
+                </h1>
+                <p class="post-subtitle">
+                    <span class="zh-only">本教程只为证明可行，不喜欢某些公司的不讲武德，AI 时代需求应该更及时满足</span>
+                    <span class="en-only">This tutorial proves it's possible. Rejecting big tech's closed ecosystems for timely AI needs.</span>
+                </p>
+            </header>
+
+            <div class="post-content">
+                
+                <div class="bilingual-section">
+                    <div class="zh-only">
+                        <p>
+                            最近，Claw概念生态越来越热闹，各大科技巨头和互联网大厂纷纷下场跑马圈地。眼看着这个原本极客、开放的底层生态逐渐被重度封装，变成大公司主导、充满商业壁垒和复杂规则的“楚门的世界”，我越发觉得：<strong>这种被大厂牢牢控制的 AI Agent 生态，是时候该改变了。</strong>
+                        </p>
+                        <p>
+                            国内大厂生态的闭环有太深，我们真正需要的其实不是又一个被各种条条框框限制的“企业级全家桶”，而是一个绝对自由、不受规则束缚的执行者。我们真的需要那些笨重、被大公司定义好的框架和数不清的付费插件吗？
+                        </p>
+
+                        <img src="../images/Gemini_Generated_Image_c2nd12c2nd12c2nd.png" alt="手搓一个claw概念生态的AI助理" class="post-image" style="max-width: 70%; margin: 24px auto; display: block;">
+                        <div class="highlight-box">
+                            <strong>我的答案是：完全不需要。</strong>现在的底层大语言模型（LLM）已经足够聪明，只要赋予大模型极简的系统级权限和基础工具，凭借其强大的自我迭代和自主编程能力，它完全可以<strong>“自己写代码、自己造工具、自己进化”</strong>。
+                        </div>
+                        <p>
+                            为了打破这层受制于大厂的玻璃，我决定抛弃那些臃肿的官方生态，不依赖任何现成的无代码平台，硬核地用 Python 从零手搓一个完全属于我自己的、长期驻留在本地机器上的全天候 AI 助理——<strong>我给它起名叫「Jinclaw」，中文小名：「金坷垃」。</strong>
+                        </p>
+                        <p>
+                            它不仅仅是一个聊天机器人，而是一个具备<strong>全平台游走能力、万能文件解析</strong>，以及最硬核的<strong>自我迭代与自主编程能力</strong>的 Autonomous Agent（自主智能体）。今天，就和大家硬核复盘一下，我是如何用最底层的代码，从大厂手里夺回 AI 控制权，打造出「金坷垃」的诞生全记录。
+                        </p>
+                    </div>
+
+                    <div class="en-block">
+                        <p>
+                            Recently, the Agent ecosystem has become increasingly crowded, with major tech giants rushing to stake their claims. Watching this originally geeky, open underlying ecosystem gradually become heavily encapsulated into a "Truman Show" dominated by big companies, filled with commercial barriers and complex rules, I increasingly feel: <strong>It's time to change this AI Agent ecosystem tightly controlled by big tech.</strong>
+                        </p>
+                        <p>
+                            We don't need another "enterprise-level full package" restricted by countless rules, but an absolutely free executor unbound by them. Do we really need those clunky, pre-defined frameworks and countless paid plugins? 
+                        </p>
+                        <div class="highlight-box">
+                            <strong>My answer is: Absolutely not.</strong> Current underlying Large Language Models (LLMs) are smart enough. By simply granting them minimalist system-level permissions and basic tools, relying on their powerful self-iteration and autonomous programming capabilities, they can completely <strong>"write their own code, build their own tools, and evolve on their own."</strong>
+                        </div>
+                        <p>
+                            To break this glass ceiling, I decided to abandon bloated official ecosystems, rely on zero no-code platforms, and hardcore code from scratch in Python a 24/7 AI assistant that resides permanently on my local machine—<strong>I named it "Jinclaw".</strong> Let's review how I took back AI control from big tech.
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="bilingual-section">
+                    <div class="zh-only">
+                        <h2>💡 第一章：架构破局——拒绝“全家桶”，打造全平台流动的「赛博打工仔」</h2>
+                        <p>
+                            大厂的 Agent 平台往往喜欢把你困在他们的网页端或者特定的 App 里。但对于一个真正的生产力工具来说，最重要的是“随叫随到，不受拘束”。我不需要一个只能在特定软件里活着的 AI，我要的是一个能接入任何我常用工作流的超级大脑。
+                        </p>
+                        
+                        <h3>1. 终端交互模式 (Terminal CLI)：硬核本体</h3>
+                        <p>这是 Jinclaw 的“本体”。它作为一个常驻进程运行在我的电脑终端里。不需要繁琐的 UI，一行指令敲下去，它就在本地直接读写我的硬盘，执行底层脚本。对于开发者来说，Terminal 永远是最高效的沟通界面。</p>
+
+                        <h3>2. 全平台神经网关：想接哪里接哪里</h3>
+                        <p>打工人离不开移动办公，但我拒绝被单一的办公软件绑架。在通信层，我为 Jinclaw 设计了一个<strong>“协议解耦”的消息网关</strong>。这意味着，Jinclaw 根本不在乎对面是谁。<strong>只要平台允许、有开放的 API 或 Webhook，它就能像水一样流进去。</strong></p>
+                        <ul>
+                            <li><strong>企业微信 / 钉钉</strong>：通过简单的 Webhook 监听，它能直接成为企业内部群里的超级大脑。</li>
+                            <li><strong>Slack / Discord</strong>：几行代码接入对应的 Bot API，接管海外项目的频道管理。</li>
+                            <li>甚至写个脚本对接<strong>自定义的个人服务器</strong>，它照样能跑得欢快。</li>
+                        </ul>
+
+                        <p>
+                            在开发这个通信网关时，最关键的设计是<strong>异步线程隔离</strong>。我利用 Python 的 <code>threading</code> 和 <code>asyncio</code>，将外部通信端点全部扔进独立的守护线程中，主线程专门留给核心大模型进行思考和终端交互。无论你在手机端疯狂给它派任务，还是在终端和它对练，它都能有条不紊地全盘接单。
+                        </p>
+                    </div>
+
+                    <div class="en-block">
+                        <h3>💡 Chapter 1: Architectural Breakthrough — Rejecting the "Full Package", Building a Cross-Platform "Cyber Worker"</h3>
+                        <p>
+                            Big tech platforms love trapping you in their web apps. But a true productivity tool must be "always on call, unbound." I designed a minimalist yet highly flexible "dual-brain architecture" for Jinclaw.
+                        </p>
+                        <h4>1. Terminal CLI: The Hardcore Core</h4>
+                        <p>This is Jinclaw's core. It runs as a persistent process in my terminal. No bloated UI—just type a command, and it reads/writes your local drive directly.</p>
+                        <h4>2. Cross-Platform Neural Gateway: Connect Anywhere</h4>
+                        <p>I designed a <strong>"protocol-decoupled" message gateway</strong>. As long as a platform has an open API or Webhook, Jinclaw flows in like water (WeChat Work, DingTalk, Slack, Discord, or custom servers).</p>
+                        <p>
+                            The key design here is <strong>asynchronous thread isolation</strong> using Python's <code>threading</code> and <code>asyncio</code>, ensuring the main thread dedicated to the LLM's thinking never gets blocked by IM network requests.
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="bilingual-section">
+                    <div class="zh-only">
+                        <h2>🧠 第二章：赋予灵魂——抛弃海量插件，用 ReAct 循环实现「自进化」</h2>
+                        <p>
+                            大厂生态最大的弊端就是插件化：你需要处理什么任务，就得去安装或开发什么特定的插件。
+                            <strong>Jinclaw 的核心哲学是：用魔法打败魔法，用代码生成代码。</strong> 它不需要海量的专用插件，我只给它配备了四个最底层的“手脚”工具：
+                        </p>
+                        <ul>
+                            <li><code>read_file</code>：读取本地文件。</li>
+                            <li><code>write_file</code>：在本地创建或覆盖写入文件（<strong>这是自进化的核心！</strong>）。</li>
+                            <li><code>run_bash_command</code>：在终端执行 Shell 命令（并捕获标准输出和报错栈）。</li>
+                            <li><code>web_search</code>：联网搜索最新资料。</li>
+                        </ul>
+
+                        <img src="../images/jinclawhello.png" alt="helloworld" class="post-image"style="max-width: 70%; margin: 24px auto; display: block;">
+
+                        <h3>真正的魔法：System Prompt 设计</h3>
+                        <div class="highlight-box warning">
+                            <strong>"SELF-EVOLVING EXECUTION LOOP:</strong><br>
+                            当你遇到没有现成工具可以解决的任务时，你绝对不能说‘我做不到’。你必须：<br>
+                            1. 分析需求，思考用 Python 或 Shell 怎么解决。<br>
+                            2. 使用 <code>write_file</code> 将你写的逻辑保存为一个临时脚本 (如 <code>tmp_task.py</code>)。<br>
+                            3. 使用 <code>run_bash_command</code> 执行这个脚本 (<code>python tmp_task.py</code>)。<br>
+                            4. 仔细观察输出（stdout/stderr）。如果报错了，使用 <code>web_search</code> 查找报错原因，修改脚本再次保存并运行。<br>
+                            5. 循环这个过程，直到成功拿到最终结果。"
+                        </div>
+
+                        <h3>自我 Debug 的惊艳瞬间</h3>
+                        <p>
+                            有一次，我让它处理一份格式奇怪的文档，底层的自带工具报了 <code>UnicodeDecodeError</code>。换作被大厂阉割过的常规 AI 早就瘫痪了。但 Jinclaw <strong>自己动手写了一个 Python 脚本</strong>去调用第三方库。第一次运行抛出 <code>ModuleNotFoundError</code>，它看到报错栈后，<strong>自己推断出缺少依赖</strong>，反手在终端执行了：<code>🛠️ 准备执行命令：pip3 install [缺失的库]</code>。依赖装好后，它再次运行脚本，成功给出了完美的总结！这就是“智能涌现”。
+                        </p>
+                    </div>
+
+                    <div class="en-block">
+                        <h3>🧠 Chapter 2: Giving it a Soul — Ditching Massive Plugins for "Self-Evolution" via ReAct Loop</h3>
+                        <p>
+                            <strong>Jinclaw's core philosophy is: Defeat magic with magic, generate code with code.</strong> I equipped it with only four foundational tools: <code>read_file</code>, <code>write_file</code>, <code>run_bash_command</code>, and <code>web_search</code>.
+                        </p>
+                        <h4>The Real Magic: System Prompt Design</h4>
+                        <div class="highlight-box warning">
+                            <strong>"SELF-EVOLVING EXECUTION LOOP:</strong> When facing a task without ready-made tools, you must NEVER say 'I cannot do this'. You must write a Python script via <code>write_file</code>, execute it via <code>run_bash_command</code>, observe the output, debug errors by searching the web, and loop until success."
+                        </div>
+                        <p>
+                            Once, it encountered a <code>UnicodeDecodeError</code>. Instead of giving up, it wrote a custom script, encountered a missing dependency, ran <code>pip3 install</code> autonomously, and successfully parsed the file. That's true intelligence emergence.
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="bilingual-section">
+                    <div class="zh-only">
+                        <h2>👁️ 第三章：万能解析眼——看懂世界，听懂声音</h2>
+                        <p>
+                            AI 再聪明，如果无法摄入高质量的数据也是白搭。为了让 Jinclaw 成为无懈可击的数据分析师，我决定在底层为其植入<strong>「万能文件解析眼」</strong>，彻底摆脱对外部商业 API 的数据依赖。
+                        </p>
+                        <ul>
+                            <li><strong>文档通杀</strong>：原生集成 <code>python-docx</code> 和 <code>pdfplumber</code>，瞬间全自动解包几百页的技术交底书。</li>
+                            <li><strong>数据洞察与防爆盾</strong>：面对几十万行的 Excel 表，Jinclaw 会<strong>智能探测，只读取表头和前 50 行样本数据</strong>，避免撑爆 Token。它理解表结构后，会自己写 pandas 脚本处理剩下的几百万行数据。</li>
+                            <li><strong>打通视觉与听觉</strong>：底层集成 <code>openai-whisper</code> 和 <code>moviepy</code>。扔给它一个音视频文件，它会在本地自动加载模型生成高精度文字转录稿。</li>
+                        </ul>
+
+                        <img src="../images/jinclawdostuff.png" alt="让他自己学着干点活" class="post-image"style="max-width: 70%; margin: 24px auto; display: block;">
+                        <p>最优雅的是，如果缺少上述解析库，它绝不会报 Fatal Error 崩溃。它会在上下文中提示自己：“缺少解析库，请先执行 pip install”。这种鲁棒性让它能在任何环境下野蛮生长。</p>
+                    </div>
+
+                    <div class="en-block">
+                        <h3>👁️ Chapter 3: Universal Parsing Eye — Seeing the World, Hearing the Sounds</h3>
+                        <p>
+                            To make Jinclaw an impeccable data analyst independent of commercial APIs, I embedded a <strong>"Universal Parsing Eye"</strong>.
+                        </p>
+                        <ul>
+                            <li><strong>Document Mastery:</strong> Native integration of <code>python-docx</code> and <code>pdfplumber</code>.</li>
+                            <li><strong>Data Insight & Token Shield:</strong> For massive CSV/Excel files, it intelligently reads only the header and first 50 rows to prevent Token explosion, then writes pandas scripts to process the rest.</li>
+                            <li><strong>Vision & Audio:</strong> Integrates <code>openai-whisper</code> and <code>moviepy</code> to transcribe meetings locally.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="bilingual-section">
+                    <div class="zh-only">
+                        <h2>🎨 第四章：细节与美学——为赛博大脑注入灵魂</h2>
+                        
+                        <h3>1. 极客级的日志分离</h3>
+                        <p>
+                            我极度讨厌满屏的 <code>HTTP Request</code> 污染我的终端。我进行了高级的 Handler 分流：
+                            <strong>黑匣子 (FileHandler)</strong> 负责记录所有底层细节用于 debug；<strong>净水器 (StreamHandler)</strong> 则让终端只保留最核心的对话和关键执行节点。清爽，就是生产力。
+                        </p>
+
+                        <h3>2. 会“呼吸”的终端动效</h3>
+                        <p>
+                            为了让它更有生命力，我用原生 ANSI 转义码写了一个后台呼吸动效。当 Jinclaw 在后台疯狂写代码时，终端会亮起青色文字：<br>
+                            <code style="color: #00bcd4;">🤖 Jinclaw 正在深度思考中... ⠋</code><br>
+                            丝滑流转，思考完毕瞬间隐形，优雅地吐出 Markdown 报告。
+                        </p>
+
+                        <hr>
+                        
+                        <h2>🚀 结语：个人 AI 的终极形态，不在大厂的花园里</h2>
+                        <p>
+                            从最初连跑脚本都会报错，到如今能自己装依赖、自己写代码读百万行表格、穿梭在各种办公软件中。Jinclaw（金坷垃）的诞生，不仅是一次硬核的代码实践，更是对大厂垄断生态的一次反叛。
+                        </p>
+                        <p>
+                            <strong>未来的 AI，不应该被困在大公司重重收费的封闭框架中。它应该住在你的电脑里，拥有自主行动的手脚，不断实现真正的自我进化。</strong>
+                        </p>
+                        <p>
+                            用极简的底层权限，换取无限的演化可能。Jinclaw 还在持续进化中，欢迎交流，一起把我们的电脑变成真正的全息工作台！
+                        </p>
+                    </div>
+
+                    <div class="en-block">
+                        <h3>🎨 Chapter 4 & Conclusion: Details, Aesthetics, and the Rebellion</h3>
+                        <p>
+                            I separated logs strictly: a FileHandler acts as a black box for debugging, while the StreamHandler keeps the terminal clean and purely conversational. I even added a "breathing" ANSI animation to the terminal while it thinks. 
+                        </p>
+                        <p>
+                            <strong>The ultimate form of personal AI is not in Big Tech's walled gardens.</strong> It shouldn't be trapped in expensive closed frameworks. It should live on your computer, possess hands and feet for autonomous action, and truly self-evolve. Jinclaw is an ongoing rebellion. Let's turn our computers into true holographic workstations!
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+    </main>
+
+    <script src="../js/main.js"></script>
+    <script>
+    // 语言切换功能
+    (function() {
+        const langBtns = document.querySelectorAll('.lang-btn');
+        const body = document.body;
+        
+        langBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                langBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const lang = btn.dataset.lang;
+                if (lang === 'en') {
+                    body.classList.add('en-mode');
+                } else if (lang === 'zh') {
+                    body.classList.remove('en-mode');
+                } else {
+                    body.classList.remove('en-mode');
+                }
+            });
+        });
+    })();
+    </script>
+</body>
+</html>
